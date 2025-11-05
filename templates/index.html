@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Student Attendance Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold text-primary mb-3">
+                <i class="bi bi-clipboard-check me-3"></i>Student Attendance Tracker
+            </h1>
+            <p class="lead text-muted">
+                A comprehensive solution for managing student attendance and performance tracking
+            </p>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-6">
+                <div class="card h-100 card-hover border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="bi bi-person-check text-primary fs-3"></i>
+                        </div>
+                        <h5 class="card-title">Teacher Portal</h5>
+                        <p class="card-text text-muted">
+                            Create courses, enroll students, mark attendance, and generate detailed reports.
+                        </p>
+                        <a href="{{ url_for('login') }}" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Teacher Login
+                        </a>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-primary mt-2">
+                            <i class="bi bi-person me-1"></i>Student Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100 card-hover border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="bi bi-graph-up text-success fs-3"></i>
+                        </div>
+                        <h5 class="card-title">Performance Analytics</h5>
+                        <p class="card-text text-muted">
+                            Track attendance percentages with weighted scoring and comprehensive reporting.
+                        </p>
+                        <button class="btn btn-success" disabled>
+                            <i class="bi bi-lock me-1"></i>Coming Soon
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-info-circle me-2"></i>Features Overview
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-2">
+                            <i class="bi bi-check-circle me-1"></i>Core Features (MVP)
+                        </h6>
+                        <ul class="list-unstyled text-muted small">
+                            <li><i class="bi bi-dot me-1"></i>Course Management</li>
+                            <li><i class="bi bi-dot me-1"></i>Student Enrollment</li>
+                            <li><i class="bi bi-dot me-1"></i>Session Creation</li>
+                            <li><i class="bi bi-dot me-1"></i>Attendance Marking</li>
+                            <li><i class="bi bi-dot me-1"></i>Percentage Reports</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-success mb-2">
+                            <i class="bi bi-clock me-1"></i>Coming in Finals
+                        </h6>
+                        <ul class="list-unstyled text-muted small">
+                            <li><i class="bi bi-dot me-1"></i>Student Portal</li>
+                            <li><i class="bi bi-dot me-1"></i>CSV Import/Export</li>
+                            <li><i class="bi bi-dot me-1"></i>Gradebook Integration</li>
+                            <li><i class="bi bi-dot me-1"></i>Advanced Analytics</li>
+                            <li><i class="bi bi-dot me-1"></i>Role-based Access</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Enroll Student - Student Attendance Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card border-0 shadow">
+            <div class="card-header bg-white border-0 text-center">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-person-plus me-2"></i>Enroll New Student
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="mb-4">
+                        <label for="full_name" class="form-label fw-semibold">Student Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-person"></i>
+                            </span>
+                            <input type="text" class="form-control form-control-lg" id="full_name" name="full_name" 
+                                   placeholder="e.g., John Doe" required autofocus>
+                        </div>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle me-1"></i>Enter the student's full name
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="course_id" class="form-label fw-semibold">Select Course</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-book"></i>
+                            </span>
+                            <select class="form-select form-select-lg" id="course_id" name="course_id" required>
+                                <option value="">Choose a course...</option>
+                                {% for course in courses %}
+                                <option value="{{ course.id }}">{{ course.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle me-1"></i>Select the course to enroll the student in
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-person-plus me-2"></i>Enroll Student
+                        </button>
+                        <a href="{{ url_for('teacher_dashboard', teacher_id=session.user_id) }}" 
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Help Card -->
+        <div class="card border-0 bg-light mt-4">
+            <div class="card-body p-3">
+                <h6 class="text-primary mb-2">
+                    <i class="bi bi-lightbulb me-1"></i>Tips
+                </h6>
+                <ul class="list-unstyled text-muted small mb-0">
+                    <li><i class="bi bi-dot me-1"></i>Students can only be enrolled in one course at a time</li>
+                    <li><i class="bi bi-dot me-1"></i>Create a course first if none are available</li>
+                    <li><i class="bi bi-dot me-1"></i>You can create sessions after enrolling students</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if request.args.get('course_id') %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const courseSelect = document.getElementById('course_id');
+    const courseId = '{{ request.args.get("course_id") }}';
+    courseSelect.value = courseId;
+});
+</script>
+{% endif %}
+{% endblock %}

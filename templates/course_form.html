@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Create Course - Student Attendance Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card border-0 shadow">
+            <div class="card-header bg-white border-0 text-center">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-book me-2"></i>Create New Course
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="mb-4">
+                        <label for="name" class="form-label fw-semibold">Course Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-book"></i>
+                            </span>
+                            <input type="text" class="form-control form-control-lg" id="name" name="name" 
+                                   placeholder="e.g., Mathematics 101" required autofocus>
+                        </div>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle me-1"></i>Enter a descriptive name for your course
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-plus-circle me-2"></i>Create Course
+                        </button>
+                        <a href="{{ url_for('teacher_dashboard', teacher_id=session.user_id) }}" 
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Help Card -->
+        <div class="card border-0 bg-light mt-4">
+            <div class="card-body p-3">
+                <h6 class="text-primary mb-2">
+                    <i class="bi bi-lightbulb me-1"></i>Tips
+                </h6>
+                <ul class="list-unstyled text-muted small mb-0">
+                    <li><i class="bi bi-dot me-1"></i>Use clear, descriptive course names</li>
+                    <li><i class="bi bi-dot me-1"></i>You can enroll students after creating the course</li>
+                    <li><i class="bi bi-dot me-1"></i>Create sessions to start marking attendance</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

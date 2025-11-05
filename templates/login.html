@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Student Attendance Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <i class="bi bi-person-circle text-primary fs-3"></i>
+                    </div>
+                    <h4 class="fw-bold">Welcome Back</h4>
+                    <p class="text-muted">Sign in to access your dashboard</p>
+                </div>
+
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-person"></i>
+                            </span>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   placeholder="Enter your name" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password <small class="text-muted">(Optional)</small></label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-lock"></i>
+                            </span>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   placeholder="Enter password (optional)">
+                        </div>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle me-1"></i>Password optional for demo mode
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="role" class="form-label">Role</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-shield-check"></i>
+                            </span>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="teacher" selected>Teacher</option>
+                                <option value="student">Student</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-4">
+                    <small class="text-muted">
+                        <i class="bi bi-shield-check me-1"></i>Secure demo environment
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

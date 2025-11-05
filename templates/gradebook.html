@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Gradebook - {{ course.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Gradebook</h2>
+        <p class="text-muted mb-0">
+            <strong>{{ course.name }}</strong>
+            {% if course.code %}({{ course.code }}){% endif %}
+        </p>
+    </div>
+    <div class="btn-group">
+        <a href="{{ url_for('attendance_report', course_id=course.id) }}" 
+           class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back to Report
+        </a>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addGradeModal">
+            <i class="bi bi-plus-circle me-1"></i>Add Grade
+        </button>
+    </div>
+</div>
+
+<!-- Add Grade Modal -->
+<div class="modal fade" id="addGradeModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Grade</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('manage_grades', course_id=course.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="student_id" class="form-label">Student <span class="text-danger">*</span></label>
+                            <select class="form-select" id="student_id" name="student_id" required>
+                                <option value="">Select student...</option>
+                                {% for enrollment, student in enrollments %}
+                                <option value="{{ student.id }}">{{ student.full_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="assignment_name" class="form-label">Assignment Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="assignment_name" name="assignment_name" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="grade_value" class="form-label">Grade <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" class="form-control" id="grade_value" name="grade_value" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="max_points" class="form-label">Max Points</label>
+                            <input type="number" step="0.01" class="form-control" id="max_points" name="max_points" value="100">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="assignment_type" class="form-label">Type</label>
+                            <select class="form-select" id="assignment_type" name="assignment_type">
+                                <option value="">Select type...</option>
+                                <option value="exam">Exam</option>
+                                <option value="quiz">Quiz</option>
+                                <option value="homework">Homework</option>
+                                <option value="project">Project</option>
+                                <option value="participation">Participation</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="due_date" class="form-label">Due Date</label>
+                            <input type="date" class="form-control" id="due_date" name="due_date">
+                        </div>
+                        <div class="col-md-12">
+                            <label for="notes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-1"></i>Add Grade
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if student_grades %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-0">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-journal-text me-2"></i>Student Grades
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="border-0">Student</th>
+                        <th class="border-0 text-center">Assignments</th>
+                        <th class="border-0 text-center">Average</th>
+                        <th class="border-0 text-center">Total Points</th>
+                        <th class="border-0 text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student_id, grades in student_grades.items() %}
+                    {% set student = enrollments|selectattr('1.id', 'equalto', student_id)|map(attribute='1')|first %}
+                    {% if student %}
+                    {% set total_points = grades|sum(attribute='grade_value') %}
+                    {% set max_points = grades|sum(attribute='max_points') %}
+                    {% set avg_percentage = (total_points / max_points * 100) if max_points > 0 else 0 %}
+                    <tr>
+                        <td class="align-middle">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                     style="width: 40px; height: 40px;">
+                                    <i class="bi bi-person text-primary"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ student.full_name }}</h6>
+                                    {% if student.student_id %}
+                                    <small class="text-muted">ID: {{ student.student_id }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="align-middle text-center">
+                            <span class="badge bg-primary">{{ grades|length }}</span>
+                        </td>
+                        <td class="align-middle text-center">
+                            <strong class="text-{{ 'success' if avg_percentage >= 90 else 'warning' if avg_percentage >= 70 else 'danger' }}">
+                                {{ "%.1f"|format(avg_percentage) }}%
+                            </strong>
+                        </td>
+                        <td class="align-middle text-center">
+                            <span class="text-muted">
+                                {{ "%.1f"|format(total_points) }} / {{ "%.0f"|format(max_points) }}
+                            </span>
+                        </td>
+                        <td class="align-middle text-center">
+                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                    data-bs-toggle="collapse" 
+                                    data-bs-target="#grades-{{ student_id }}">
+                                <i class="bi bi-chevron-down"></i> View
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="5" class="p-0 border-0">
+                            <div class="collapse" id="grades-{{ student_id }}">
+                                <div class="p-3 bg-light">
+                                    <h6 class="mb-3">Grade Details</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Assignment</th>
+                                                    <th class="text-center">Grade</th>
+                                                    <th class="text-center">Percentage</th>
+                                                    <th class="text-center">Type</th>
+                                                    <th class="text-center">Due Date</th>
+                                                    <th class="text-center">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for grade in grades %}
+                                                <tr>
+                                                    <td>
+                                                        <div>{{ grade.assignment_name }}</div>
+                                                        {% if grade.notes %}
+                                                        <small class="text-muted">{{ grade.notes }}</small>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="text-center">
+                                                        {{ "%.1f"|format(grade.grade_value) }} / {{ "%.0f"|format(grade.max_points) }}
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <strong class="text-{{ 'success' if (grade.grade_value / grade.max_points * 100) >= 90 else 'warning' if (grade.grade_value / grade.max_points * 100) >= 70 else 'danger' }}">
+                                                            {{ "%.1f"|format((grade.grade_value / grade.max_points) * 100) }}%
+                                                        </strong>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        {% if grade.assignment_type %}
+                                                        <span class="badge bg-secondary">{{ grade.assignment_type }}</span>
+                                                        {% else %}
+                                                        <span class="text-muted">-</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="text-center">
+                                                        {% if grade.due_date %}
+                                                        {{ grade.due_date.strftime('%m/%d/%Y') }}
+                                                        {% else %}
+                                                        <span class="text-muted">-</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <form method="POST" 
+                                                              action="{{ url_for('delete_grade', grade_id=grade.id) }}" 
+                                                              class="d-inline"
+                                                              onsubmit="return confirm('Are you sure you want to delete this grade?');">
+                                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card border-0 shadow">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-journal-text text-muted" style="font-size: 3rem;"></i>
+        <h5 class="text-muted mt-3">No Grades Yet</h5>
+        <p class="text-muted">Start adding grades for your students.</p>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addGradeModal">
+            <i class="bi bi-plus-circle me-1"></i>Add First Grade
+        </button>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+

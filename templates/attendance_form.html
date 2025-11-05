@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Mark Attendance - Student Attendance Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Mark Attendance</h2>
+        <p class="text-muted mb-0">
+            <strong>{{ course.name }}</strong> - {{ session.session_date.strftime('%B %d, %Y') }}
+        </p>
+    </div>
+    <a href="{{ url_for('teacher_dashboard', teacher_id=teacher_id) }}" 
+       class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+    </a>
+</div>
+
+{% if enrollments %}
+<div class="card border-0 shadow">
+    <div class="card-header bg-white border-0">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-people me-2"></i>Enrolled Students ({{ enrollments|length }})
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        <form method="POST">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="border-0">Student Name</th>
+                            <th class="border-0 text-center">Status</th>
+                            <th class="border-0">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for enrollment, student in enrollments %}
+                        <tr>
+                            <td class="align-middle">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                         style="width: 40px; height: 40px;">
+                                        <i class="bi bi-person text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">{{ student.full_name }}</h6>
+                                        <small class="text-muted">ID: {{ student.id }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="align-middle text-center">
+                                <select class="form-select attendance-status-select" 
+                                        name="status_{{ student.id }}" 
+                                        id="status_{{ student.id }}"
+                                        data-student="{{ student.full_name }}">
+                                    <option value="">Select status...</option>
+                                    <option value="Present" 
+                                            {% if attendance_records.get(student.id) == 'Present' %}selected{% endif %}>
+                                        Present
+                                    </option>
+                                    <option value="Late" 
+                                            {% if attendance_records.get(student.id) == 'Late' %}selected{% endif %}>
+                                        Late
+                                    </option>
+                                    <option value="Excused" 
+                                            {% if attendance_records.get(student.id) == 'Excused' %}selected{% endif %}>
+                                        Excused
+                                    </option>
+                                    <option value="Absent" 
+                                            {% if attendance_records.get(student.id) == 'Absent' %}selected{% endif %}>
+                                        Absent
+                                    </option>
+                                </select>
+                            </td>
+                            <td class="align-middle">
+                                <span class="status-indicator" id="indicator_{{ student.id }}">
+                                    {% if attendance_records.get(student.id) %}
+                                        <span class="badge bg-{{ 'success' if attendance_records.get(student.id) == 'Present' else 'warning' if attendance_records.get(student.id) == 'Late' else 'info' if attendance_records.get(student.id) == 'Excused' else 'danger' }}">
+                                            {{ attendance_records.get(student.id) }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted small">Not marked</span>
+                                    {% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="card-footer bg-light border-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="text-muted small">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Select attendance status for each student
+                    </div>
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>Save Attendance
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="markAllPresent()">
+                            <i class="bi bi-check-all me-1"></i>Mark All Present
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Status Legend -->
+<div class="card border-0 bg-light mt-4">
+    <div class="card-body p-3">
+        <h6 class="text-primary mb-3">
+            <i class="bi bi-info-circle me-1"></i>Attendance Status Legend
+        </h6>
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-success me-2">Present</span>
+                    <small class="text-muted">100% weight</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-warning me-2">Late</span>
+                    <small class="text-muted">75% weight</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-info me-2">Excused</span>
+                    <small class="text-muted">50% weight</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-danger me-2">Absent</span>
+                    <small class="text-muted">0% weight</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<div class="card border-0 shadow">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-people text-muted" style="font-size: 3rem;"></i>
+        <h5 class="text-muted mt-3">No Students Enrolled</h5>
+        <p class="text-muted">This course doesn't have any enrolled students yet.</p>
+        <a href="{{ url_for('create_student') }}?course_id={{ course.id }}" 
+           class="btn btn-primary">
+            <i class="bi bi-person-plus me-1"></i>Enroll Students
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Update status indicator when selection changes
+document.querySelectorAll('.attendance-status-select').forEach(select => {
+    select.addEventListener('change', function() {
+        const studentId = this.id.replace('status_', '');
+        const indicator = document.getElementById('indicator_' + studentId);
+        const status = this.value;
+        
+        if (status) {
+            let badgeClass = 'bg-secondary';
+            if (status === 'Present') badgeClass = 'bg-success';
+            else if (status === 'Late') badgeClass = 'bg-warning';
+            else if (status === 'Excused') badgeClass = 'bg-info';
+            else if (status === 'Absent') badgeClass = 'bg-danger';
+            
+            indicator.innerHTML = `<span class="badge ${badgeClass}">${status}</span>`;
+        } else {
+            indicator.innerHTML = '<span class="text-muted small">Not marked</span>';
+        }
+    });
+});
+
+// Mark all students as present
+function markAllPresent() {
+    document.querySelectorAll('.attendance-status-select').forEach(select => {
+        select.value = 'Present';
+        // Trigger change event to update indicators
+        select.dispatchEvent(new Event('change'));
+    });
+}
+</script>
+{% endblock %}
