@@ -7,7 +7,13 @@ bind = os.environ.get('GUNICORN_BIND', '0.0.0.0:5000')
 backlog = 2048
 
 # Worker processes
-workers = int(os.environ.get('GUNICORN_WORKERS', multiprocessing.cpu_count() * 2 + 1))
+# Calculate workers based on CPU count, but cap at a reasonable maximum
+cpu_count = multiprocessing.cpu_count()
+# Use 2-4 workers per CPU, but cap at 8 workers maximum for this application
+default_workers = min(cpu_count * 2 + 1, 8)
+workers = int(os.environ.get('GUNICORN_WORKERS', default_workers))
+# Ensure workers is at least 1 and at most 16
+workers = max(1, min(workers, 16))
 worker_class = 'sync'
 worker_connections = 1000
 timeout = int(os.environ.get('GUNICORN_TIMEOUT', 120))
@@ -34,8 +40,8 @@ tmp_upload_dir = None
 # keyfile = None
 # certfile = None
 
-# Preload application
-preload_app = True
+# Preload application (set to False if experiencing issues with database connections)
+preload_app = False
 
 # Worker timeouts
 graceful_timeout = 30

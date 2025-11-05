@@ -42,5 +42,6 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/')" || exit 1
 
 # Run startup script that initializes database and starts Gunicorn
+# Using start.py ensures database is initialized before Gunicorn starts
 CMD ["python", "start.py"]
 
