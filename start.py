@@ -48,10 +48,9 @@ def main():
             os.execvp('gunicorn', ['gunicorn', '-c', 'gunicorn_config.py', 'app:app'])
         else:
             # Fallback to default configuration
-            port = os.environ.get('PORT', '5000')
             os.execvp('gunicorn', [
                 'gunicorn',
-                '--bind', f'0.0.0.0:{port}',
+                '--bind', '0.0.0.0:5000',
                 '--workers', '4',
                 '--timeout', '120',
                 '--access-logfile', '-',

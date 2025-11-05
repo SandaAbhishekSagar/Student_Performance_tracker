@@ -3,9 +3,7 @@ import multiprocessing
 import os
 
 # Server socket
-# Use PORT from environment if available (required for Heroku, Railway, Render, etc.)
-port = os.environ.get('PORT', '5000')
-bind = os.environ.get('GUNICORN_BIND', f'0.0.0.0:{port}')
+bind = os.environ.get('GUNICORN_BIND', '0.0.0.0:5000')
 backlog = 2048
 
 # Worker processes
