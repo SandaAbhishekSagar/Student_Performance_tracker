@@ -8,20 +8,38 @@ import sys
 
 def main():
     """Initialize database and start Gunicorn"""
-    print("🔧 Initializing database...")
+    sys.stdout.flush()
+    sys.stderr.flush()
+    
+    print("🔧 Initializing database...", flush=True)
+    sys.stdout.flush()
     
     # Initialize database
     try:
-        from app import app, init_db
+        from app import app, init_db, logger
         with app.app_context():
+            logger.info("Starting database initialization...")
             init_db()
-        print("✅ Database initialized successfully")
+            logger.info("Database initialization completed successfully")
+        print("✅ Database initialized successfully", flush=True)
+        sys.stdout.flush()
     except Exception as e:
-        print(f"❌ Error initializing database: {e}")
+        print(f"❌ Error initializing database: {e}", flush=True, file=sys.stderr)
+        sys.stderr.flush()
+        import traceback
+        traceback.print_exc(file=sys.stderr)
+        sys.stderr.flush()
+        # Try to log the error
+        try:
+            from app import logger
+            logger.error(f"Database initialization failed: {e}", exc_info=True)
+        except:
+            pass
         sys.exit(1)
     
     # Start Gunicorn
-    print("🚀 Starting Gunicorn server...")
+    print("🚀 Starting Gunicorn server...", flush=True)
+    sys.stdout.flush()
     
     # Use exec to replace current process with Gunicorn
     try:
@@ -30,9 +48,10 @@ def main():
             os.execvp('gunicorn', ['gunicorn', '-c', 'gunicorn_config.py', 'app:app'])
         else:
             # Fallback to default configuration
+            port = os.environ.get('PORT', '5000')
             os.execvp('gunicorn', [
                 'gunicorn',
-                '--bind', '0.0.0.0:5000',
+                '--bind', f'0.0.0.0:{port}',
                 '--workers', '4',
                 '--timeout', '120',
                 '--access-logfile', '-',

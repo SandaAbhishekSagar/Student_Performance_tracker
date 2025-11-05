@@ -7,6 +7,7 @@ import os
 import csv
 import io
 import logging
+import threading
 from functools import wraps
 
 # Configure logging
@@ -18,7 +19,11 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///student_tracker.db')
+# Handle postgres:// URLs (convert to postgresql:// for SQLAlchemy)
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///student_tracker.db')
+if database_url.startswith('postgres://'):
+    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['WTF_CSRF_ENABLED'] = True
 app.config['WTF_CSRF_TIME_LIMIT'] = 3600
@@ -29,6 +34,9 @@ csrf = CSRFProtect(app)
 
 # Models
 class User(db.Model):
+    __tablename__ = 'user'  # Explicit table name for PostgreSQL compatibility
+    __table_args__ = {'quote': True}  # Quote table name since 'user' is a PostgreSQL reserved keyword
+    
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=True)
@@ -918,21 +926,44 @@ def internal_error(error):
 # Initialize database
 def init_db():
     """Initialize database tables and create default data if needed"""
-    with app.app_context():
+    try:
+        # Create all tables
+        db.create_all()
+        logger.info("Database tables created successfully")
+        
+        # Create demo teacher if not exists
         try:
-            # Create all tables
-            db.create_all()
-            logger.info("Database tables created successfully")
-            
-            # Create demo teacher if not exists
             if not User.query.filter_by(role='teacher').first():
                 teacher = User(name='Demo Teacher', role='teacher')
                 db.session.add(teacher)
                 db.session.commit()
                 logger.info("Created demo teacher")
         except Exception as e:
-            logger.error(f"Error initializing database: {str(e)}")
-            raise
+            logger.warning(f"Could not create demo teacher (tables might not exist yet): {str(e)}")
+            db.session.rollback()
+    except Exception as e:
+        logger.error(f"Error initializing database: {str(e)}")
+        raise
+
+# Initialize database on first request (for gunicorn when start.py isn't used)
+# Use a set to track which workers have initialized (thread-safe check)
+_db_initialized = set()
+_db_lock = threading.Lock()
+
+@app.before_request
+def ensure_db_initialized():
+    """Ensure database is initialized before first request"""
+    worker_id = threading.current_thread().ident
+    with _db_lock:
+        if worker_id not in _db_initialized:
+            try:
+                logger.info(f"Initializing database for worker {worker_id}")
+                init_db()
+                _db_initialized.add(worker_id)
+                logger.info(f"Database initialized for worker {worker_id}")
+            except Exception as e:
+                logger.error(f"Failed to initialize database on startup: {str(e)}", exc_info=True)
+                # Don't raise - let the app start and handle errors per-request
 
 if __name__ == '__main__':
     init_db()
